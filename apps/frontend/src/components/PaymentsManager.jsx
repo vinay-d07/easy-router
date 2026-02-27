@@ -14,14 +14,23 @@ const PaymentsManager = () => {
   }, []);
 
   const fetchUserData = async () => {
-    // This would typically come from a user profile endpoint
-    // For now, we'll simulate it
-    setCredits(100);
-    setTransactionHistory([
-      { id: 1, amount: 50, type: 'credit', date: '2024-01-15', description: 'Initial credit' },
-      { id: 2, amount: -25, type: 'debit', date: '2024-01-20', description: 'API usage' },
-    ]);
-    setLoading(false);
+    try {
+      const userProfile = await apiClient.getUserProfile();
+      setCredits(userProfile.credits);
+      
+      // TODO: Fetch transaction history from backend when endpoint is available
+      setTransactionHistory([
+        { id: 1, amount: 1000, type: 'credit', date: new Date().toISOString().split('T')[0], description: 'Initial credits' },
+      ]);
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      setMessage({
+        type: 'error',
+        text: 'Failed to load user data. Please refresh the page.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOnramp = async () => {
@@ -30,16 +39,16 @@ const PaymentsManager = () => {
 
     try {
       const result = await apiClient.onramp();
-      setCredits(prev => prev + result.credits);
+      setCredits(result.credits);
       setMessage({
         type: 'success',
-        text: `Successfully added ${result.credits} credits to your account!`
+        text: `Successfully added credits to your account!`
       });
       
       // Add to transaction history
       setTransactionHistory(prev => [{
         id: Date.now(),
-        amount: result.credits,
+        amount: 1000, // The backend adds 1000 credits per onramp
         type: 'credit',
         date: new Date().toISOString().split('T')[0],
         description: 'Onramp credits'
@@ -49,7 +58,7 @@ const PaymentsManager = () => {
       console.error('Onramp failed:', error);
       setMessage({
         type: 'error',
-        text: 'Failed to add credits. Please try again.'
+        text: error.message || 'Failed to add credits. Please try again.'
       });
     } finally {
       setOnramping(false);

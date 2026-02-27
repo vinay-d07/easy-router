@@ -82,6 +82,15 @@ class ApiClient {
     return this.request(`/models/${modelId}/providers`);
   }
 
+  // User endpoints
+  async getUserProfile() {
+    return this.request('/profile/');
+  }
+
+  async getUserCredits() {
+    return this.request('/profile/credits');
+  }
+
   // Payments endpoints
   async onramp() {
     return this.request('/payments/onramp', {
